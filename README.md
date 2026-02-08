@@ -27,7 +27,7 @@ Execute the script with the container name as an argument:
 ./perf-trace-collector.sh <container_name>
 ```
 
-####Arguments:
+#### Arguments:
 
 - container_name: The name or ID of the Docker container running the process to trace.
 
