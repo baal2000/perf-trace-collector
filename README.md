@@ -21,21 +21,20 @@ This script implements a pull-based workflow:
 
 ### Usage
 
-Execute the script with the process name and the container name as arguments:
+Execute the script with the container name as an argument:
 
 ```
-./collect_trace.sh <process_name> <container_name>
+./perf-trace-collector.sh <container_name>
 ```
 
 ####Arguments:
 
-- process_name: The name of the binary to trace (e.g., MyService).
-- container_name: The name or ID of the Docker container.
+- container_name: The name or ID of the Docker container running the process to trace.
 
 #### Example:
 
 ```
-sudo ./collect_trace.sh MyService production-api-container
+sudo ./perf-trace-collector.sh production-api-container
 ```
 ### Output
 
@@ -60,7 +59,7 @@ The generated trace is compatible with Windows-based analysis tools:
 
 ### How it Works
 
-- PID Discovery: Uses pidof on the host to find the real PID of the containerized process.
+- PID Discovery: Uses docker inspect to retrieve the process ID of the main process running in the container.
 - Raw Capture: Runs perf record at 99 Hz for 10 seconds to capture stack samples without requiring cooperation from the .NET runtime.
 - Map Extraction: Uses docker exec to copy /tmp/perf-1.map out of the container.
 - Symbol Unmasking replaces the opaque hex addresses with human-readable C# signatures.

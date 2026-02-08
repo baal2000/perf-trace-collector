@@ -1,10 +1,8 @@
 #!/bin/bash
 
 # --- CONFIGURATION ---
-# Container name from second argument
-CONTAINER_NAME="${2}"
-# Process name from first argument
-PROCESS_BINARY="${1}"
+# Container name from first argument
+CONTAINER_NAME="${1}"
 DURATION=10
 SAMPLESPERSECOND=99
 # ---------------------
@@ -28,14 +26,13 @@ DEBUG_DIR="artifacts"
 
 # Help / Validation
 show_help() {
-    echo "Usage: $0 [process_name] [container_name]"
+    echo "Usage: $0 [container_name]"
     echo ""
     echo "Arguments:"
-    echo "  process_name    The name of the .NET binary to trace (e.g., MyService)"
     echo "  container_name  The Docker container name where the process is running"
     echo ""
     echo "Example:"
-    echo "  $0 MyService production-api-container"
+    echo "  $0 production-api-container"
     echo ""
 }
 
@@ -44,20 +41,21 @@ if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     exit 0
 fi
 
-if [ -z "$PROCESS_BINARY" ] || [ -z "$CONTAINER_NAME" ]; then
-    echo "Error: Missing arguments."
+if [ -z "$CONTAINER_NAME" ]; then
+    echo "Error: Missing container_name argument."
     show_help
     exit 1
 fi
 
 echo "=========================================="
-echo "Step 1: Finding PID for '$PROCESS_BINARY'..."
+echo "Step 1: Finding PID for container '$CONTAINER_NAME'..."
 echo "=========================================="
 
-TARGET_PID=$(pidof "$PROCESS_BINARY" | awk '{print $1}')
+TARGET_PID=$(sudo docker inspect -f '{{.State.Pid}}' "$CONTAINER_NAME")
 
-if [ -z "$TARGET_PID" ]; then
-    echo "Error: Process '$PROCESS_BINARY' not found."
+if [ -z "$TARGET_PID" ] || [ "$TARGET_PID" = "0" ]; then
+    echo "Error: Could not retrieve PID for container '$CONTAINER_NAME'."
+    echo "Ensure the container is running and accessible."
     exit 1
 fi
 
