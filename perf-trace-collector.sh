@@ -94,7 +94,14 @@ sudo perf script -i "$DATA_FILE" \
     -f > "$RAW_TEXT_FILE"
 sudo chmod 666 "$RAW_TEXT_FILE"
 
-# 3b. Create the Python Script on the fly
+# 3b. Check for Python 3 availability
+echo "   -> checking for python3..."
+if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 is not installed. Cannot resolve symbols."
+    exit 1
+fi
+
+# 3c. Create the Python Script on the fly
 echo "   -> generating resolver script..."
 cat << 'EOF' > "$PYTHON_SCRIPT"
 import sys, bisect, datetime, re
@@ -167,16 +174,11 @@ if __name__ == "__main__":
     process_trace(sys.argv[1], sys.argv[2])
 EOF
 
-# 3c. Run the Python Script to create the final fixed file
+# 3d. Run the Python Script to create the final fixed file
 echo "   -> resolving symbols..."
-if command -v python3 &> /dev/null; then
-    python3 "$PYTHON_SCRIPT" "$MAP_FILE" "$RAW_TEXT_FILE" > "$FIXED_TEXT_FILE"
-else
-    echo "Error: python3 is not installed. Cannot resolve symbols."
-    exit 1
-fi
+python3 "$PYTHON_SCRIPT" "$MAP_FILE" "$RAW_TEXT_FILE" > "$FIXED_TEXT_FILE"
 
-# 3d. Create Readme
+# 3e. Create Readme
 echo "   -> creating instructions..."
 cat << EOF > "$README_FILE"
 TRACE ANALYSIS INSTRUCTIONS
